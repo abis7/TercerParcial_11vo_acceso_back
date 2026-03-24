@@ -25,7 +25,7 @@ npm install
 Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
 
 ```env
-DB_URL=postgresql://admin:GAkyhXJuuCZRJRVIOUjLzUL5LFPdBQIN@dpg-d6h6cuua2pns738bkc3g-a.oregon-postgres.render.com/mi_base_datos_zspt?ssl=true
+DB_URL=PRIV
 ```
 
 ---
