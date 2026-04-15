@@ -110,7 +110,8 @@ export const seedFolios = async (req: Request, res: Response) => {
             folio: nuevoFolio.folio
         });
     } catch (error) {
-        res.status(500).json({ error: 'El folio ya existe o hubo un error' });
+        console.error('Error al precargar folio:', error);
+        res.status(500).json({ error: 'Error al precargar el folio' });
     }
 };
 
