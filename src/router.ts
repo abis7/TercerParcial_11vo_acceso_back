@@ -1,46 +1,47 @@
-import {Router} from 'express';
-import { createProduct, deleteProduct, getProductById, getProducts, updateAvailability, updateProduct } from './handlers/product';
+import { Router } from 'express';
 import { body, param } from 'express-validator';
+import { 
+    solicitarAcceso, 
+    verificarEstatus, 
+    updateStatusCallback, 
+    seedFolios
+} from './handlers/solicitud';
 import { handlerInputErrors } from './middleware';
+
 const router = Router();
 
-router.get('/', getProducts);
-router.get('/:id',
-    param('id').isInt().withMessage('id no valido'),
-    handlerInputErrors,
-    getProductById);
+/**
+ * @section RUTAS DE SOLICITUDES Y ACCESO
+ */
 
-router.post('/',
-    body('name').notEmpty().withMessage('El nombre es obligatorio'),
-    body('image').notEmpty().withMessage('La imagen es obligatoria'),
-    body('description').notEmpty().withMessage('La descripción es obligatoria'),
-    body('price').isFloat({min: 0}).withMessage('El precio debe ser un número válido')
-        .notEmpty().withMessage('No debe ser vacío')
-        .custom((value) => value > 0).withMessage('El precio debe ser un número positivo'),
-    body('quantity').isInt({gt: 0}).withMessage('La cantidad debe ser un número entero positivo'),
+// 1. POST /api/solicitar-acceso
+// Registra la intención y valida si el folio existe en pagos_referencia
+router.post('/solicitar-acceso',
+    body('email')
+        .isEmail().withMessage('Email no válido')
+        .notEmpty().withMessage('El email es obligatorio'),
+    body('folio')
+        .notEmpty().withMessage('El folio es obligatorio'),
     handlerInputErrors,
-    createProduct);
+    solicitarAcceso
+);
 
-router.put('/:id',
-    param('id').isInt().withMessage('id no valido'),
-    body('name').notEmpty().withMessage('El nombre no puede estar vacío'),
-    body('image').notEmpty().withMessage('La imagen no puede estar vacía'),
-    body('description').notEmpty().withMessage('La descripción no puede estar vacía'),
-    body('price').isFloat({min: 0}).withMessage('El precio debe ser un número válido')
-        .custom((value) => value > 0).withMessage('El precio debe ser un número positivo'),
-    body('quantity').isInt({gt: 0}).withMessage('La cantidad debe ser un número entero positivo'),
-    body('availability').isBoolean().withMessage('Valor para disponibilidad no válido'),
+// 2. GET /api/verificar-estatus/:email
+// Devuelve el estado actual del trámite basado en el correo
+router.get('/verificar-estatus/:email',
+    param('email').isEmail().withMessage('Email no válido'),
     handlerInputErrors,
-    updateProduct);
+    verificarEstatus
+);
 
-router.patch('/:id',
-    param('id').isInt().withMessage('id no valido'),
+// 3. PATCH /api/callback-n8n
+// Endpoint para que n8n actualice el estatus a "Aceptado" o "Rechazado"
+router.patch('/update-status',
+    body('id').isInt().withMessage('ID de solicitud no válido'),
+    body('estatus').notEmpty().withMessage('El estatus es obligatorio'),
     handlerInputErrors,
-    updateAvailability);
+    updateStatusCallback
+);
 
-router.delete('/:id',
-    param('id').isInt().withMessage('id no valido'),
-    handlerInputErrors,
-    deleteProduct);
-
+router.post('/admin/seed-folios', seedFolios);
 export default router;
